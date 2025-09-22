@@ -19,7 +19,7 @@ This means if your server's IP changes, you don't need to reconfigure anything o
 Download the `openvpn-install.sh` script to your server.
 
 ```bash
-curl -O https://your-script-location/openvpn-install.sh
+curl -O https://github.com/heyaibi/openvpn-install/openvpn-install.sh
 ```
 
 ### 2. Make it Executable
