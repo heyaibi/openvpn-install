@@ -1067,6 +1067,7 @@ WantedBy=multi-user.target" >/etc/systemd/system/iptables-openvpn.service
 	fi
 
 	# client-template.txt is created so we have a template to add further users later
+	# REFACTOR: The remote line is now omitted from the template. It will be added dynamically in newClient().
 	echo "client" >/etc/openvpn/client-template.txt
 	if [[ $PROTOCOL == 'udp' ]]; then
 		echo "proto udp" >>/etc/openvpn/client-template.txt
@@ -1074,8 +1075,7 @@ WantedBy=multi-user.target" >/etc/systemd/system/iptables-openvpn.service
 	elif [[ $PROTOCOL == 'tcp' ]]; then
 		echo "proto tcp-client" >>/etc/openvpn/client-template.txt
 	fi
-	echo "remote $IP $PORT
-dev tun
+	echo "dev tun
 resolv-retry infinite
 nobind
 persist-key
@@ -1163,8 +1163,22 @@ function newClient() {
 		TLS_SIG="2"
 	fi
 
+	# REFACTOR: Dynamically get the server's current public IP and port.
+	# This makes sure that new clients get the correct IP even if it has changed.
+	echo "Resolving server public IP..."
+	PUBLIC_IP=$(resolvePublicIP)
+	PORT=$(grep '^port ' /etc/openvpn/server.conf | cut -d " " -f 2)
+	PROTOCOL=$(grep '^proto ' /etc/openvpn/server.conf | cut -d " " -f 2)
+
+
 	# Generates the custom client.ovpn
-	cp /etc/openvpn/client-template.txt "$homeDir/$CLIENT.ovpn"
+	# Start with the template
+	cat /etc/openvpn/client-template.txt > "$homeDir/$CLIENT.ovpn"
+
+	# Then, add the dynamic remote line
+	echo "remote $PUBLIC_IP $PORT $PROTOCOL" >> "$homeDir/$CLIENT.ovpn"
+
+	# Finally, append keys and certificates
 	{
 		echo "<ca>"
 		cat "/etc/openvpn/easy-rsa/pki/ca.crt"
