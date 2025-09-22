@@ -69,8 +69,7 @@ AUTO_INSTALL=y ./openvpn-install.sh
 
 # or
 
-export AUTO_INSTALL=y
-./openvpn-install.sh
+sudo AUTO_INSTALL=y PORT_CHOICE=2 PORT=49309 IPV6_SUPPORT=n CLIENT=VPNClient PASS=1 ./openvpn-install.sh
 ```
 
 A default set of variables will then be set, by passing the need for user input.
